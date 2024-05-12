@@ -29,30 +29,27 @@ typedef enum
 	,
 	OP_RET_VOID // [nb_params] returns from a function which has the given number of parameters without returning a value
 	,
-	OP_CONV_I_F // converts the value from stack from int to double
+	OP_CONV_I_D // converts the value from stack from int to double
 	,
 	OP_JMP // [instr] unconditional jump to the specified instruction
 	,
 	OP_JF // [instr] jumps to the specified instruction if the value from stack is false
 	,
-	OP_JF_F,
 	OP_JT // [instr] jumps to the specified instruction if the value from stack is true
 	,
 	OP_FPLOAD // [idx] puts on stack the value from FP[idx]
 	,
-	OP_FPLOAD_F,
 	OP_FPSTORE // [idx] puts in FP[idx] the value from stack
 	,
-	OP_FPSTORE_F,
 	OP_ADD_I // adds 2 int values from stack and puts the result on stack
 	,
-	OP_ADD_F // adds 2 double values from stack and puts the result on stack
+	OP_ADD_D // adds 2 double values from stack and puts the result on stack
 	,
 	OP_LESS_I // compares 2 int values from stack and puts the result on stack as int
 	,
-	OP_LESS_F // compares 2 double values from stack and puts the result on stack as int
+	OP_LESS_D // compares 2 double values from stack and puts the result on stack as int
 	,
-	OP_PUSH_F //[ct.f] puts on stack the constant ct.f
+	OP_PUSH_D //[ct.f] puts on stack the constant ct.f
 } Opcode;
 
 typedef struct Instr Instr;

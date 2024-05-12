@@ -77,7 +77,7 @@ int popi()
 }
 
 // nou
-double popf()
+int popf()
 {
 	if (SP == stack - 1)
 		err("trying to pop from empty stack");
@@ -103,10 +103,10 @@ void put_i()
 	printf("=> %d", popi());
 }
 
-// nou - trebuia numit put_d
+// nou
 void put_d()
 {
-	printf("=> %g", popf());
+	printf("=> %d", popf());
 }
 
 void vmInit()
@@ -123,7 +123,7 @@ void run(Instr *IP)
 {
 	Val v;
 	int iArg, iTop, iBefore;
-	double fTop, fBefore; // nou
+	double dTop, dBefore; // nou
 	void (*extFnPtr)();
 	for (;;)
 	{
@@ -140,7 +140,7 @@ void run(Instr *IP)
 			IP = IP->next;
 			break;
 		// nou
-		case OP_PUSH_F:
+		case OP_PUSH_D:
 			printf("PUSH.f\t%g", IP->arg.f);
 			pushf(IP->arg.f);
 			IP = IP->next;
@@ -179,36 +179,16 @@ void run(Instr *IP)
 			printf("JF\t%p\t// %d", IP->arg.instr, iTop);
 			IP = iTop ? IP->next : IP->arg.instr;
 			break;
-		// nou
-		case OP_JF_F:
-			fTop = popf();
-			printf("JF\t%p\t// %g", IP->arg.instr, fTop);
-			IP = (fTop != 0.0) ? IP->next : IP->arg.instr;
-			break;
 		case OP_FPLOAD:
 			v = FP[IP->arg.i];
 			pushv(v);
 			printf("FPLOAD\t%d\t// i:%d, f:%g", IP->arg.i, v.i, v.f);
 			IP = IP->next;
 			break;
-		// nou
-		case OP_FPLOAD_F:
-			v = FP[IP->arg.i];
-			pushv(v);
-			printf("FPLOAD\t%d\t// f:%g", IP->arg.i, v.f);
-			IP = IP->next;
-			break;
 		case OP_FPSTORE:
 			v = popv();
 			FP[IP->arg.i] = v;
 			printf("FPSTORE\t%d\t// i:%d, f:%g", IP->arg.i, v.i, v.f);
-			IP = IP->next;
-			break;
-		// nou
-		case OP_FPSTORE_F:
-			v = popv();
-			FP[IP->arg.i] = v;
-			printf("FPSTORE\t%d\t// f:%g", IP->arg.i, v.f);
 			IP = IP->next;
 			break;
 		case OP_ADD_I:
@@ -219,11 +199,11 @@ void run(Instr *IP)
 			IP = IP->next;
 			break;
 		// nou
-		case OP_ADD_F:
-			fTop = popf();
-			fBefore = popf();
-			pushf(fBefore + fTop);
-			printf("ADD.f\t// %g+%g -> %g", fBefore, fTop, fBefore + fTop);
+		case OP_ADD_D:
+			dTop = popf();
+			dBefore = popf();
+			pushf(dBefore + dTop);
+			printf("ADD.f\t// %g+%g -> %g", dBefore, dTop, dBefore + dTop);
 			IP = IP->next;
 			break;
 		case OP_LESS_I:
@@ -234,11 +214,11 @@ void run(Instr *IP)
 			IP = IP->next;
 			break;
 		// nou
-		case OP_LESS_F:
-			fTop = popf();
-			fBefore = popf();
-			pushf(fBefore < fTop);
-			printf("LESS.f\t// %g<%g -> %d", fBefore, fTop, fBefore < fTop);
+		case OP_LESS_D:
+			dTop = popf();
+			dBefore = popf();
+			pushf(dBefore < dTop);
+			printf("LESS.f\t// %g<%g -> %d", dBefore, dTop, dBefore < dTop);
 			IP = IP->next;
 			break;
 		default:
@@ -291,36 +271,40 @@ void f(int n){		// stack frame: n[-2] ret[-1] oldFP[0] i[1]
 // 	return code;
 // }
 
-// nou
 Instr *genTestProgram()
 {
 	Instr *code = NULL;
-	addInstrWithDouble(&code, OP_PUSH_F, 2.0); // adăugăm o valoare double pe stivă
+	addInstrWithDouble(&code, OP_PUSH_D, 2.0);
 	Instr *callPos = addInstr(&code, OP_CALL);
 	addInstr(&code, OP_HALT);
 	callPos->arg.instr = addInstrWithInt(&code, OP_ENTER, 1);
-	// double i=0.0;
-	addInstrWithDouble(&code, OP_PUSH_F, 0.0);
-	addInstrWithInt(&code, OP_FPSTORE_F, 1);
-	// while(i<n){
-	Instr *whilePos = addInstrWithInt(&code, OP_FPLOAD_F, 1);
-	addInstrWithDouble(&code, OP_FPLOAD_F, -2);
-	addInstr(&code, OP_LESS_F);
-	Instr *jfAfter = addInstr(&code, OP_JF_F);
+
+	// double i = 0.0;
+	addInstrWithDouble(&code, OP_PUSH_D, 0.0);
+	addInstrWithInt(&code, OP_FPSTORE, 1);
+
+	// while(i < n)
+	Instr *whilePos = addInstrWithInt(&code, OP_FPLOAD, 1);
+	addInstrWithInt(&code, OP_FPLOAD, -2);
+	addInstr(&code, OP_LESS_D);
+	Instr *jfAfter = addInstr(&code, OP_JF);
+
 	// put_d(i);
-	addInstrWithDouble(&code, OP_FPLOAD_F, 1);
+	addInstrWithInt(&code, OP_FPLOAD, 1);
 	Symbol *s = findSymbol("put_d");
 	if (!s)
 		err("undefined: put_d");
 	addInstr(&code, OP_CALL_EXT)->arg.extFnPtr = s->fn.extFnPtr;
-	// i=i+0.5;
-	addInstrWithDouble(&code, OP_FPLOAD_F, 1);
-	addInstrWithDouble(&code, OP_PUSH_F, 0.5);
-	addInstr(&code, OP_ADD_F);
-	addInstrWithInt(&code, OP_FPSTORE_F, 1);
-	// } ( the next iteration)
+
+	// i = i + 0.5;
+	addInstrWithInt(&code, OP_FPLOAD, 1);
+	addInstrWithDouble(&code, OP_PUSH_D, 0.5);
+	addInstr(&code, OP_ADD_D);
+	addInstrWithInt(&code, OP_FPSTORE, 1);
+
 	addInstr(&code, OP_JMP)->arg.instr = whilePos;
-	// returns from function
+
 	jfAfter->arg.instr = addInstrWithInt(&code, OP_RET_VOID, 1);
+
 	return code;
 }
