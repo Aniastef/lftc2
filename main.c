@@ -14,7 +14,7 @@ int main()
     pushDomain();
     vmInit();
     parse(tokens);
-    // showDomain(symTable, "global");
+    //showDomain(symTable, "global");
     Instr *testCode = genTestProgram();
     run(testCode);
     dropDomain();

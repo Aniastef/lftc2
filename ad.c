@@ -84,6 +84,8 @@ void freeSymbol(Symbol *s){
 		case SK_STRUCT:
 			freeSymbols(s->structMembers);
 			break;
+		case SK_PARAM:
+			break;
 		}
 	free(s);
 	}

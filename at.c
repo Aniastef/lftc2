@@ -3,19 +3,19 @@
 
 bool canBeScalar(Ret* r){
 	Type* t=&r->type;
-	if(t->n>=0)return false;
-	if(t->tb==TB_VOID)return false;
-	return true;
+	if(t->n>=0)return false; //sa nu fie array
+	if(t->tb==TB_VOID)return false; //sa nu fie void
+	return true;//deci e scalar
 	}
 
-bool convTo(Type *src,Type *dst){
+bool convTo(Type *src,Type *dst){ //daca tipul src poate fi convertit in dst *daca ambele sunt array uri de ex merge*
 	// the pointers (arrays) can be converted one to another, but in nothing else
 	if(src->n>=0){
 		if(dst->n>=0)return true;
 		return false;
 		}
 	if(dst->n>=0)return false;
-	switch(src->tb){
+	switch(src->tb){//verifica conversia intre functii
 		case TB_INT:
 		case TB_DOUBLE:
 		case TB_CHAR:
@@ -34,7 +34,7 @@ bool convTo(Type *src,Type *dst){
 		}
 	}
 
-bool arithTypeTo(Type *t1,Type *t2,Type *dst){
+bool arithTypeTo(Type *t1,Type *t2,Type *dst){ //orice operatie care contine un double rezulta intr-un double
 	// there are no arithmetic operations with pointers
 	if(t1->n>=0||t2->n>=0)return false;
 	// the result of an arithmetic operation cannot be poinetr or struct
@@ -69,7 +69,7 @@ bool arithTypeTo(Type *t1,Type *t2,Type *dst){
 		}
 	}
 
-Symbol *findSymbolInList(Symbol *list,const char *name){
+Symbol *findSymbolInList(Symbol *list,const char *name){//cauta simbolurile intr o lista
 	for(Symbol *s=list;s;s=s->next){
 			if(!strcmp(s->name,name))return s;
 		}
